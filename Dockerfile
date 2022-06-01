@@ -15,6 +15,6 @@ ENV EXT_PASSWORD=extpassword1
 
 RUN python app/server.py
 
-EXPOSE 55563 55564
+EXPOSE 55573 55574
 
-CMD ["python", "app/server.py", "--cmd", "serve", "--model-url", "http://deeplearning.ge.imati.cnr.it/ditac/models/ditac-cable-problem-v0.6-endoftraining.pkl", "--model-name", "ditac-cable-problem-v0.6-endoftraining.pkl", "--flask-port", "55563", "--web-port", "55564"]
+CMD ["python", "app/server.py", "--cmd", "serve", "--model-url", "http://http://deeplearning.ge.imati.cnr.it/promed/models/promed-multioutput-regression-problem-v0.1-endoftraining.pkl", "--model-name", "promed-multioutput-regression-problem-v0.1-endoftraining.pkl", "--flask-port", "55573", "--web-port", "55574"]

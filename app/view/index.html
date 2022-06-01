@@ -22,6 +22,36 @@
             Developed by Andrea Ranieri - CNR-IMATI
         </p>
     </header>
+
+
+
+    <p class="text" style="color:crimson;text-decoration:none;">
+<label for="manufacturing-classes">Choose a manufacturing class, then press the Analyze button</label>
+    </p>
+    <div class='content'>
+      <div class='select'>
+	<p>
+	Manufacturing class:
+<select name="manufacturing-classes" id="manufacturing-classes">
+	<option value="class1">Class 1</option>
+	<option value="class2">Class 2</option>
+	<option value="class3">Class 3</option>
+	<option value="class4">Class 4</option>
+	<option value="class5">Class 5</option>
+	<option value="class6">Class 6</option>
+</select>
+	</p>
+      </div>
+      <div class='analyze'>
+        <button id='analyze-button' class='analyze-button' type='button' style='align: center' onclick='analyze()'>Analyze</button>
+        <div class='result-label'>
+            <label id='result-label'></label>
+        </div>
+      </div>
+    </div>
+
+
+<!--
     <p class="text" style="color:crimson;text-decoration:none;">
         Please load your KistlerFile in .csv format to get a prediction
     </p>
@@ -49,6 +79,7 @@
             <label id='result-label'></label>
         </div>
       </div>
+-->
     </div>
     </div>
     <div class='more'>
@@ -63,3 +94,6 @@
 </div>
 </body>
 </html>
+
+
+

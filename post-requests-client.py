@@ -2,7 +2,7 @@
 
 import requests
 #port = 55512
-port = 55563
+port = 55573
 print(f'Performing post request on port {port}\n')
 page='post'
 #page='analyze'

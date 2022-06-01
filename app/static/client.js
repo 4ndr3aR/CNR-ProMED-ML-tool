@@ -15,8 +15,10 @@ function showPicked(input) {
 }
 
 function analyze() {
+/*
   var uploadFiles = el("file-input").files;
   if (uploadFiles.length !== 1) alert("Please select a file to analyze!");
+*/
 
   el("analyze-button").innerHTML = "Analyzing...";
   var xhr = new XMLHttpRequest();
@@ -34,8 +36,14 @@ function analyze() {
     el("analyze-button").innerHTML = "Analyze";
   };
 
+/*
   var fileData = new FormData();
   fileData.append("file", uploadFiles[0]);
   xhr.send(fileData);
+*/
+  var text_content = new FormData();
+  var mc_el = el("manufacturing-classes")
+  text_content.append("manufacturing-class", mc_el.options[mc_el.selectedIndex ].text)
+  xhr.send(text_content);
 }
 
