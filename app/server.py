@@ -37,10 +37,6 @@ from threading import Thread
 
 from colored import fg, bg, attr
 
-import kistlerfile
-from kistlerfile import KistlerFile
-from kistlerfile import create_inference_ready_sample
-
 import socket
 
 import argparse
