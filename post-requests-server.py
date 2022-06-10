@@ -20,8 +20,8 @@ def index():
 
 @app.route('/post', methods=['POST'])
 def result():
-	print(request.form['kistlerfile'])
-	return f"Received: {request.form['kistlerfile']}"
+	print(request.form['manufacturing-class'])
+	return f"Received: {request.form['manufacturing-class']}"
 
 app.run(host='0.0.0.0', port=55512, debug=flask_debug)
 

@@ -51,7 +51,19 @@ from argument_parser import var2opt
 from starlette_auth  import *
 from bcrypt_password import user_pass_db, create_user_pass_db
 
-classes = [False, True]		# for the ML model
+#classes = [False, True]		# for the ML model
+
+# taken directly from: http://deeplearning.ge.imati.cnr.it/promed/promed-ML-tool-v0.1.html
+model_classes = {
+			'bar'                      : [],
+			'bridge'                   : [],
+			'front_lower_bridge'       : [],
+			'solo_crown'               : [],
+			'upper_subperiost_implant' : [],
+                   }
+
+classes = [k for k,v in model_classes.items()]
+
 basepath = None
 userpath = None
 
@@ -156,7 +168,7 @@ async def setup_learner(cmd, url, model_name):
 			raise RuntimeError(message)
 		else:
 			raise
-
+'''
 def process_csvdata(csvdata):
 	debug = False
 	if debug:
@@ -172,6 +184,18 @@ def process_csvdata(csvdata):
 	sample = create_inference_ready_sample(kf, debug=False)
 	row, clas, probs = learn.predict(sample)
 	return row, clas, probs, kf
+'''
+
+def model_predict(manufacturing_class, debug=True):
+	#manufacturing_class = 'upper_subperiost_implant'
+	if debug:
+		print(f'Received {manufacturing_class = }')
+
+	item = pd.Series(manufacturing_class, index=['class'])
+	if debug:
+		print(f'Data submitted to the model: {item = }')
+	row, clas, probs = learn.predict(item)
+	return row, clas, probs
 
 
 # --------------------------------------------------
@@ -185,15 +209,56 @@ async def login(request):
 		response = Response(headers={"WWW-Authenticate": "Basic"}, status_code=401)
 	return response
 
+def postprocess_model_output(predicted_row, debug=True):
+	if debug:
+		#print(f'{type(predicted_row) = }\n{predicted_row = }\n{clas = }\n{probs = }')
+		df = pd.DataFrame(predicted_row)
+		print(f'{df = }')
+		#print(f'{predicted_row.data = }')
+		print(f'{predicted_row.items = }')
+		print(f'{predicted_row.x_names = }')
+		print(f'{predicted_row.y = }')
+		print(f'{predicted_row.loc[0] = }')
+		print(f'{predicted_row.iloc[0] = }')
+	manufacturing_class = classes[int(predicted_row.loc[0][0])-1]		# don't ask me why, but I made classes in the model 1-based -.-
+	df_data = predicted_row.loc[0][1:]
+	if debug:
+		print(f'{manufacturing_class  = }')
+		print(f'{df_data = }')
+		#print(f'{df_data[1] = }')
+
+	html_output	= f'manufacturing_class: {manufacturing_class} -> '
+	post_req_output	= ''
+	for idx, this_row in enumerate(df_data):
+		if debug:
+			print(f'df_data[{idx}] = {this_row}')
+		html_output += f'{this_row:.3f} - '
+		post_req_output	+= f'{this_row:.5f}|'
+	post_req_output = post_req_output [:-1]
+	return html_output, post_req_output
+
 @app.route('/analyze', methods=['POST'])
 async def analyze(request):
 	form_data = await request.form()
-	starlette_data = await(form_data['file'].read())
-	csvdata = StringIO(str(starlette_data.decode("utf-8")))
+	#starlette_data = await(form_data['file'].read())
+	starlette_data = form_data['manufacturing-class']
+	#csvdata = StringIO(str(starlette_data))
 
-	row, clas, probs, kf = process_csvdata(csvdata)
+	debug = True
+	if debug:
+		print(f'Predicting: {starlette_data = }') 
 
-	return JSONResponse({'result': str(classes[int(clas)]) + ' -> ' + str(probs)})
+	#row, clas, probs, kf = process_csvdata(csvdata)
+	row, clas, probs = model_predict(starlette_data, debug=debug)
+	if debug:
+		print(f'{type(row) = }\n{row = }\n{clas = }\n{probs = }')
+
+	html_output, post_req_output = postprocess_model_output(row, debug=debug)
+
+	if debug:
+		print(f'{post_req_output = }')
+
+	return JSONResponse({'result': str(html_output) + '<br>' + str(probs)})
 # --------------------------------------------------
 # ==================================================
 # --------------------------------------------------
@@ -212,7 +277,7 @@ def index():
 
 @flask_app.route('/post', methods=['POST'])
 def result():
-	debug = True
+	debug = False
 	if 'username' in request.form and 'password' in request.form:
 		username            = request.form['username']
 		plaintext_password  = request.form['password']
@@ -225,6 +290,7 @@ def result():
 	if not password_verified:
 		return f"/post received username: {username} -> {msg}{username}"
 
+	'''
 	print(f'Received filename: {Path(request.form["filename"]).stem}\n\n')
 	content = request.form['kistlerfile']
 	readable_hash = hashlib.sha256(content.encode('utf-8')).hexdigest();
@@ -260,8 +326,22 @@ def result():
 
 	with open(htmlfn, "w") as html_file:
 		html_file.write(template)
+	'''
+	print(f'Received manufacturing-class: {Path(request.form["manufacturing-class"]).stem}\n\n')
+	content = request.form['manufacturing-class']
+	if debug:
+		print(f'Predicting: {content = }') 
 
-	return f"/post received: {request.form['filename']} -> sha256: {readable_hash} -> class: {predstr} -> probs: {str(probs)}"
+	row, clas, probs = model_predict(content, debug=debug)
+	if debug:
+		print(f'{type(row) = }\n{row = }\n{clas = }\n{probs = }')
+
+	html_output, post_req_output = postprocess_model_output(row, debug=debug)
+
+	if debug:
+		print(f'{post_req_output = }')
+
+	return f"/post received: {request.form['manufacturing-class']} -> pred: {post_req_output}"
 # --------------------------------------------------
 # ==================================================
 # --------------------------------------------------
